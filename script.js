@@ -139,6 +139,23 @@ function updateBalance() {
       return total - parseFloat(transaction.amount);
     }
   }, 0);
+  
+   fetch('/api/monthly-summary', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(transactions)
+  })
+    .then(response => response.json())
+    .then(monthlySummary => {
+      // Update balance and progress based on monthly summary
+      // ... Update balance and progress code ...
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
 
   balanceAmount.textContent = balance.toFixed(2);
   updateProgress();
@@ -189,9 +206,30 @@ function addTransaction(e) {
   };
 
   transactions.push(newTransaction);
-
-  displayTransactions();
   updateBalance();
+  displayTransactions();
+  
+  // Make API request to categorise the transactions 
+  fetch('/api/categorized-transactions',{
+    method: 'POST',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body: JSON.stringify(transactions)
+  })
+    .then(response => response.json())
+    .then(categorizedTransactions => {
+      // update transactions with categorised data
+      transactions = categorizedTransactions;
+   
+      displayTransactions();
+      updateBalance();
+  })
+  
+  .catch(error => {
+    console.error('Error: ', error);
+    
+  })
 
   // Clear input fields
   document.getElementById('description').value = '';
@@ -205,6 +243,9 @@ function deleteTransaction(index) {
   displayTransactions();
   updateBalance();
 }
+
+
+
 
 // Function to set the goal amount
 function setGoalAmount(e) {
@@ -343,5 +384,47 @@ function deleteBillReminder(index) {
   displayBillReminders();
 }
 
+const transactionForm = document.getElementById('transaction-form');
+transactionForm.addEventListener('submit', addTransaction);
+const goalForm = document.getElementById('goal-form');
+goalForm.addEventListener('submit', setGoalAmount);
 const billReminderForm = document.getElementById('bill-reminder-form');
 billReminderForm.addEventListener('submit', addBillReminder);
+function trainAndPredict() {
+  // ... Existing code ...
+
+  // Make API request to train and make predictions
+  fetch('/predict', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(transactions)
+  })
+    .then(response => response.json())
+    .then(result => {
+      // Handle the result from the API
+      console.log(result);
+    })
+  .catch(error => {
+      console.error('Error:', error);
+    });
+}
+fetch('/api/categorized-transactions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(transactions)
+})
+  .then(response => response.json())
+  .then(categorizedTransactions => {
+    // Update transactions with categorized data
+    transactions = categorizedTransactions;
+
+    displayTransactions();
+    updateBalance();
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
