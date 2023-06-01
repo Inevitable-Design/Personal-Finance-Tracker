@@ -140,21 +140,7 @@ function updateBalance() {
     }
   }, 0);
   
-   fetch('/api/monthly-summary', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(transactions)
-  })
-    .then(response => response.json())
-    .then(monthlySummary => {
-      // Update balance and progress based on monthly summary
-      // ... Update balance and progress code ...
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
+   
 
 
   balanceAmount.textContent = balance.toFixed(2);
@@ -210,26 +196,7 @@ function addTransaction(e) {
   displayTransactions();
   
   // Make API request to categorise the transactions 
-  fetch('/api/categorized-transactions',{
-    method: 'POST',
-    headers: {
-      'Content-Type' : 'application/json'
-    },
-    body: JSON.stringify(transactions)
-  })
-    .then(response => response.json())
-    .then(categorizedTransactions => {
-      // update transactions with categorised data
-      transactions = categorizedTransactions;
-   
-      displayTransactions();
-      updateBalance();
-  })
   
-  .catch(error => {
-    console.error('Error: ', error);
-    
-  })
 
   // Clear input fields
   document.getElementById('description').value = '';
@@ -263,6 +230,66 @@ function setGoalAmount(e) {
   goalContainer.style.display = 'block';
 
   updateProgress();
+}
+
+function displayMonthlySummary(data) {
+    const monthlySummaryDiv = document.getElementById('monthly-summary');
+    
+    // Display categorized transactions
+    const categorizedTransactions = data.categorized_transactions;
+    const categorizedTransactionsHtml = `<h2>Categorized Transactions</h2>
+        <ul>
+            ${categorizedTransactions.map(item => `<li>${item.Category}: $${item.Transaction_Amount}</li>`).join('')}
+        </ul>`;
+    monthlySummaryDiv.innerHTML = categorizedTransactionsHtml;
+    
+    // Display monthly summary as a bar chart
+    const monthlySummary = data.monthly_summary;
+    const labels = monthlySummary.map(item => `${item.Month}/${item.Year}`);
+    const amounts = monthlySummary.map(item => item.Transaction_Amount);
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'monthly-summary-chart';
+    monthlySummaryDiv.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Transaction Amount',
+                data: amounts,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function fetchMonthlySummary() {
+    fetch('/api/monthly-summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(summary_data) // Replace with your actual transaction data
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayMonthlySummary(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
 
 // Function to display bill reminders
@@ -390,41 +417,3 @@ const goalForm = document.getElementById('goal-form');
 goalForm.addEventListener('submit', setGoalAmount);
 const billReminderForm = document.getElementById('bill-reminder-form');
 billReminderForm.addEventListener('submit', addBillReminder);
-function trainAndPredict() {
-  // ... Existing code ...
-
-  // Make API request to train and make predictions
-  fetch('/predict', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(transactions)
-  })
-    .then(response => response.json())
-    .then(result => {
-      // Handle the result from the API
-      console.log(result);
-    })
-  .catch(error => {
-      console.error('Error:', error);
-    });
-}
-fetch('/api/categorized-transactions', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(transactions)
-})
-  .then(response => response.json())
-  .then(categorizedTransactions => {
-    // Update transactions with categorized data
-    transactions = categorizedTransactions;
-
-    displayTransactions();
-    updateBalance();
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
