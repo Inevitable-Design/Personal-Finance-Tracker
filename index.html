@@ -1,12 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Personal Finance Tracker</title>
-  <link rel="stylesheet" type="text/css" href="styles2.css">
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
   <div class="container">
     <h1>PERSONAL FINANCE TRACKER</h1>
+
+    <div id = "monthly - summary"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.0">
+
+        // Make an API request to get the monthly summary data
+        fetch('/api/monthly-summary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transactionsData) // Replace with your transaction data
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Display the monthly summary data
+            displayMonthlySummary(data);
+        })
+        .catch(error => console.error(error));
+    </script>
 
     <div id="reminder-message">
       <p id="reminder-text"></p>
